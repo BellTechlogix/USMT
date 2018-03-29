@@ -131,7 +131,6 @@
             IF($migapps -eq $True){$migapps = "/i:$usmtpath\migapp.xml"}
             IF($migdocss -eq $True){$migdocs = "/i:$usmtpath\migdocs.xml"}
             IF($config -eq $True){$config = "/i:$usmtpath\Config_AppsAndSettings.xml"}
-            IF($overwrite -eq $True){$overwrite = "/o"}
             IF($continue -eq $True){$continue = "/c"}
             IF($logging -eq $True){$log = "/L:$storepath\scanstate.log"}
             IF($logging -eq $True){$loggingtype = "/v:1"}
@@ -158,13 +157,13 @@
 $scriptpath = split-path -parent $MyInvocation.MyCommand.Definition
 
 #Set script to pre-migration, or post for collecting or pushing data
-$migrationtype = MultipleSelectionBox -inputarray "Pre-Migration","Post-Migration" -listboxtype One -label "Pre or Post User State Migration" -prompt "Migration Point" -sizeX 350 -sizeY 220
+$migrationtype = MultipleSelectionBox -inputarray "Pre-Migration","Post-Migration" -listboxtype One -label "Pre or Post User State Migration" -prompt "Migration Point" -sizeX 350 -sizeY 320
 
 #Pre-Migration Tasks
 If($migrationtype -eq "Pre-Migration")
 {
 	$computername = $env:computername
-	$pclocal = MultipleSelectionBox  -inputarray "Big Sandy","Columbus","Gilla Bend","GSK(hq)/UVG/EAP","NIP","PRP(Pearl River)","NTP(North Tonowada)","YellowTavern","LocalDrive","ManualInput" -listboxtype One -label "Where to Store Migration Data" -prompt "Migration Data" -sizeX 350 -sizeY 220
+	$pclocal = MultipleSelectionBox  -inputarray "Big Sandy","Columbus","Gilla Bend","GSK(hq)/UVG/EAP","NIP","PRP(Pearl River)","NTP(North Tonowada)","YellowTavern","LocalDrive","ManualInput" -listboxtype One -label "Where to Store Migration Data" -prompt "Migration Data" -sizeX 350 -sizeY 320
     IF($pclocal -eq "LocalDrive"){$StorePath = Get-Folder -Description "Where do you wish to store the capture files?"}
     IF($pclocal -eq "Big Sandy"){$StorePath = "\\abkpbsp01\migrations\$computername\"}
 	IF($pclocal -eq "Columbus"){$StorePath = "\\abkpcol2\migrations\$computername\"}
@@ -186,7 +185,7 @@ If($migrationtype -eq "Pre-Migration")
 #Post-Migration Tasks
 If($migrationtype -eq "Post-Migration")
 {
-	$pclocal = MultipleSelectionBox  -inputarray "YellowTavern","HeadQuarters","LocalDrive","ManualInput" -listboxtype One -label "Where to Store Migration Data" -prompt "Migration Data" -sizeX 350 -sizeY 220
+	$pclocal = MultipleSelectionBox  -inputarray "Big Sandy","Columbus","Gilla Bend","GSK(hq)/UVG/EAP","NIP","PRP(Pearl River)","NTP(North Tonowada)","YellowTavern","LocalDrive","ManualInput" -listboxtype One -label "Where Migration Data is Stored" -prompt "Migration Data" -sizeX 350 -sizeY 320
 	[System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic') | Out-Null
 	$oldpc = [Microsoft.VisualBasic.Interaction]::InputBox("Please enter the name of the Old PC", "PCName", "wpitzousto")
 	IF($pclocal -eq "ManualInput")
@@ -202,7 +201,7 @@ If($migrationtype -eq "Post-Migration")
 	IF($pclocal -eq "NIP"){$StorePath = "\\afsnip2\migrations\$oldpc\USMT\"}
 	IF($pclocal -eq "NTP"){$StorePath = "\\afsntp1\migrations\$oldpc\USMT\"}
 	IF($pclocal -eq "YellowTavern"){$StorePath = "\\BTL-YT-DFS02\migrations\$oldpc\USMT\"}
-	Run-USMT -type restore -path $scriptpath -storepath $StorePath -migapps:$true -config:$true -overwrite:$true -continue:$true -logging:$true -migdocs:$true
+	Run-USMT -type restore -path $scriptpath -storepath $StorePath -migapps:$true -config:$true -continue:$true -logging:$true -migdocs:$true
 }
 
 Read-Host "Press ENTER to Continue"
