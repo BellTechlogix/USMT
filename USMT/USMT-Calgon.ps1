@@ -1,7 +1,8 @@
 <# 
  USMT_Calgon.ps1
  Created by Kristopher Roy
- Created on 21MArch18
+ Created - 21MArch18
+ Updated - 30March18
  Requirements: This script requires that the USMT has been downloaded and is available
 #>
 
@@ -134,7 +135,7 @@
             IF($continue -eq $True){$continue = "/c"}
             IF($logging -eq $True){$log = "/L:"+$storepath+"scanstate.log"}
             IF($logging -eq $True){$loggingtype = "/v:1"}
-            $captureargs = @($storepath,$migapps,$migdocs,$overwrite,$continue,$log,$loggingtype)
+            $restoreargs = @($storepath,$migapps,$migdocs,$overwrite,$continue,$log,$loggingtype)
             $loadstatepath = $usmtpath+"\loadstate.exe"	    
             &$loadstatepath $restoreargs
 		   }
@@ -145,7 +146,7 @@
             IF($config -eq $True){$config = "/i:$usmtpath\Config_AppsAndSettings.xml"}
             IF($overwrite -eq $True){$overwrite = "/o"}
             IF($continue -eq $True){$continue = "/c"}
-            IF($logging -eq $True){$log = "/L:"+$storepath+"capturestate.log"}
+            IF($logging -eq $True){$log = "/L:"+$storepath+"\capturestate.log"}
             IF($logging -eq $True){$loggingtype = "/v:1"}
             $captureargs = @($storepath,$migapps,$migdocs,$overwrite,$continue,$log,$loggingtype)
             $scanstatepath = $usmtpath+"\scanstate.exe"
@@ -186,20 +187,27 @@ If($migrationtype -eq "Pre-Migration")
 If($migrationtype -eq "Post-Migration")
 {
 	$pclocal = MultipleSelectionBox  -inputarray "Big Sandy","Columbus","Gilla Bend","GSK(hq)/UVG/EAP","NIP","PRP(Pearl River)","NTP(North Tonowada)","YellowTavern","LocalDrive","ManualInput" -listboxtype One -label "Where Migration Data is Stored" -prompt "Migration Data" -sizeX 350 -sizeY 320
-	[System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic') | Out-Null
-	$oldpc = [Microsoft.VisualBasic.Interaction]::InputBox("Please enter the name of the Old PC", "PCName", "wpitzousto")
+	#[System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic') | Out-Null
+	#$oldpc = [Microsoft.VisualBasic.Interaction]::InputBox("Please enter the name of the Old PC", "PCName", "wpitzousto") 
+
 	IF($pclocal -eq "ManualInput")
 	{
 		[System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic') | Out-Null
 		$StorePath = [Microsoft.VisualBasic.Interaction]::InputBox("Type the path for migration storage location", "FolderPath", "\\server\migdata\$oldpc\USMT\")
 	}
-	IF($pclocal -eq "LocalDrive"){$StorePath = Get-Folder -Description "Where do you wish to store the capture files?"}
-    IF($pclocal -eq "Big Sandy"){$StorePath = "\\abkpbsp01\migrations\$oldpc\USMT\"}
-	IF($pclocal -eq "Columbus"){$StorePath = "\\abkpcol2\migrations\$oldpc\USMT\"}
-	IF($pclocal -eq "Gilla Bend"){$StorePath = "\\gbppw001\migrations\$oldpc\USMT\"}
-	IF($pclocal -eq "GSK(hq)/UVG/EAP"){$StorePath = "\\afspit\migrations\$oldpc\USMT\"}
-	IF($pclocal -eq "NIP"){$StorePath = "\\afsnip2\migrations\$oldpc\USMT\"}
-	IF($pclocal -eq "NTP"){$StorePath = "\\afsntp1\migrations\$oldpc\USMT\"}
-	IF($pclocal -eq "YellowTavern"){$StorePath = "\\BTL-YT-DFS02\migrations\$oldpc\USMT\"}
+	IF($pclocal -eq "LocalDrive"){$ServerPath = Get-Folder -Description "Select the server and migrations root"}
+    IF($pclocal -eq "Big Sandy"){$ServerPath = "\\abkpbsp01\migrations"}
+	IF($pclocal -eq "Columbus"){$ServerPath = "\\abkpcol2\migrations"}
+	IF($pclocal -eq "Gilla Bend"){$ServerPath = "\\gbppw001\migrations"}
+	IF($pclocal -eq "GSK(hq)/UVG/EAP"){$ServerPath = "\\afspit\migrations"}
+	IF($pclocal -eq "NIP"){$ServerPath = "\\afsnip2\migrations"}
+	IF($pclocal -eq "NTP"){$ServerPath = "\\afsntp1\migrations"}
+	IF($pclocal -eq "YellowTavern"){$ServerPath = "\\BTL-YT-DFS02\migrations"}
+
+    $oldpclist = GCI $ServerPath -Name
+    $PCName = MultipleSelectionBox  -inputarray $oldpclist  -listboxtype One -label "Select The Old PC" -prompt "PC Name" -sizeX 350 -sizeY 320  
+    $StorePath =  "$ServerPath\$PCName\"
 	Run-USMT -type restore -path $scriptpath -storepath $StorePath -migapps:$true -config:$true -continue:$true -logging:$true -migdocs:$true
 }
+
+Read-Host "Press ENTER to Continue"
